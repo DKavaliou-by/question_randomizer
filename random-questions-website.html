@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Random Questions Generator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+
+    .container {
+      display: flex;
+      /* height: calc(100vh - 40px); */
+      gap: 20px;
+    }
+
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      flex: 2;
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
+    }
+
+    .right-panel {
+      flex: 1;
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .question-card {
+      height: 200px;
+      /* height: 100%; */
+      perspective: 1000px;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      /* max-height: 200px; */
+      height: 100%;
+      text-align: center;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
+
+    .question-card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-front,
+    .card-back {
+      position: absolute;
+      width: 100%;
+      /* max-height: 200px; */
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px;
+      border-radius: 10px;
+      overflow: auto;
+    }
+
+    .card-front {
+      background-color: white;
+      color: #333;
+    }
+
+    .card-back {
+      background-color: #3498db;
+      color: white;
+      transform: rotateY(180deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .question-text {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .answer-text {
+      padding-top: 40px;
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: white;
+      font-weight: 700;
+    }
+
+    .question-theme {
+      font-size: 14px;
+      color: #666;
+      font-style: italic;
+      margin-bottom: 10px;
+    }
+
+    .flip-btn {
+      padding: 8px 12px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+
+    .flip-btn:hover {
+      background-color: #3570b2;
+    }
+
+    .back-btn {
+      padding: 8px 12px;
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+
+    .back-btn:hover {
+      background-color: #219653;
+    }
+
+    .control-section {
+      background-color: #f9f9f9;
+      padding: 15px;
+      border-radius: 6px;
+    }
+
+    .control-section h3 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    button {
+      padding: 10px 15px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #3570b2;
+    }
+
+    .slider-container {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .slider-container input {
+      flex: 1;
+    }
+
+    .dropdown {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .dropdown-btn {
+      width: 100%;
+      padding: 10px;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: white;
+      width: 100%;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      z-index: 1;
+    }
+
+    .dropdown-content label {
+      display: block;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+
+    .dropdown-content label:hover {
+      background-color: #f1f1f1;
+    }
+
+    .file-input-container {
+      position: relative;
+      margin-top: 10px;
+    }
+
+    .file-input-container input[type="file"] {
+      position: absolute;
+      width: 0;
+      height: 0;
+      opacity: 0;
+    }
+
+    .file-input-label {
+      display: inline-block;
+      padding: 10px 15px;
+      background-color: #4a90e2;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .file-input-label:hover {
+      background-color: #3570b2;
+    }
+
+    .file-name {
+      margin-top: 5px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #999;
+      padding: 50px 0;
+    }
+
+    .empty-state i {
+      font-size: 50px;
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .select-all-container {
+      padding: 8px 10px;
+      border-bottom: 1px solid #eee;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="left-panel" id="questions-container">
+      <div class="empty-state">
+        <i>📋</i>
+        <p>No questions generated yet. Click the "Generate Questions" button use defaul questions to start.</p>
+      </div>
+    </div>
+    <div class="right-panel">
+      <div class="control-section">
+        <h3>Generate Questions</h3>
+        <button id="generate-btn">Generate Questions</button>
+        <div class="slider-container">
+          <span>Number of questions: </span>
+          <input type="range" id="question-count" min="1" max="10" value="3">
+          <span id="question-count-value">3</span>
+        </div>
+      </div>
+
+      <div class="control-section">
+        <h3>Question Themes</h3>
+        <div class="dropdown">
+          <button class="dropdown-btn" id="theme-dropdown-btn">Select Themes</button>
+          <div class="dropdown-content" id="theme-dropdown-content">
+            <div class="select-all-container">
+              <label><input type="checkbox" id="select-all-themes"> Select All</label>
+            </div>
+            <!-- Themes will be populated here dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <div class="control-section">
+        <h3>Upload Question File</h3>
+        <div class="file-input-container">
+          <input type="file" id="file-input" accept=".json">
+          <label for="file-input" class="file-input-label">Choose File</label>
+          <div class="file-name" id="file-name">No file chosen</div>
+        </div>
+        <button id="upload-btn" style="margin-top: 10px; width: 100%;">Upload Questions</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Sample questions data (will be replaced with uploaded data)
+    let questionsData = [
+      {
+        "qNumber": 1,
+        "question": "Tell us about a case when you didn't have enough test data to verify functionality. How did you handle this issue?",
+        "answer": "S (Situation): On one of the projects, it was necessary to verify the logic of awarding bonuses to users in an e-commerce platform. The client base was incomplete, and we lacked real transactions to model different scenarios.\nT (Task): My task was to ensure the most accurate test coverage possible despite the lack of production data.\nA (Action): I gathered key requirements and created a set of pseudo-real data based on them, discussing its structure with a business analyst. Additionally, I suggested to developers that they adjust the environment so data could be easily 'injected' and reused. As a result, we prepared a separate script to generate a large batch of transactions with the necessary parameters (transaction type, date, bonuses, etc.).\nR (Result): Thanks to the new approach to data generation, we covered all major scenarios and even identified a critical bug related to incorrectly awarding bonuses at night. The team found the solution useful, and this script was later applied on other projects as well.",
+        "theme": "Quality Assurance Fundamentals and Working with Test Environments"
+      },
+      {
+        "qNumber": 2,
+        "question": "Share an example when an unstable environment prevented timely testing of functionality. What did you do?",
+        "answer": "S (Situation): While testing a new version of a web application, the server part often 'crashed,' requiring multiple daily restarts of the environment. Both automated and manual testing were disrupted.\nT (Task): It was necessary to find a way to minimize downtime and reduce the risk of missing important defects due to the environment's instability.\nA (Action): I started recording every instance of environment unavailability or incorrect behavior and compiled a report noting which services crashed the most frequently. Then, I suggested to DevOps engineers that they allocate separate containers for 'critical' modules so they could be restarted independently. Additionally, I set up a prioritized 'smoke' test run which launched right after each environment release.\nR (Result): Thanks to the reports and prioritizing our testing strategy, we reduced downtime by nearly 30%. The team responded more quickly to crashes and maintained a stable environment. As a result, the release proceeded on time without critical defects in production.",
+        "theme": "Quality Assurance Fundamentals and Working with Test Environments"
+      },
+      {
+        "qNumber": 3,
+        "question": "Tell us about a situation when product requirements frequently changed and it impacted the test plan. How did you adapt?",
+        "answer": "S (Situation): In an Agile project, requirements were reviewed in almost every sprint: new features were added, priorities shifted. The QA team had difficulty keeping test cases up to date.\nT (Task): My task was to ensure sufficient test coverage without spending too much time completely rewriting test documentation.\nA (Action): I proposed a modular approach to creating test cases, where each test case was linked to a specific functional block. When requirements changed, we updated only the relevant test blocks. Additionally, we held short daily syncs with the business analyst and developers to find out which parts of the functionality were most prone to change first.\nR (Result): This approach allowed us to respond more quickly to new requirements and cut the time spent updating test documentation by about half. The percentage of missed bugs in 'hot' features decreased, and QA's work became more transparent to the rest of the team.",
+        "theme": "Working with Requirements (Partial Changes, Incomplete Documentation)"
+      },
+      {
+        "qNumber": 4,
+        "question": "Share an experience when you needed to work with a foreign team (or client) and faced communication difficulties. How did you resolve them?",
+        "answer": "S (Situation): I had to collaborate with the customer's headquarters in another country where the team members spoke English and were located in a different time zone. Misunderstandings about task priorities and deadlines often arose, especially during verbal discussions.\nT (Task): I needed to establish more transparent communication and ensure the QA team received all necessary product and testing scenario information on time.\nA (Action): I insisted on converting all key discussions into short documented meetings with mandatory notes and subsequent summary emails. For faster communication, we created a channel in the corporate messenger, where main issues and solutions were recorded in English.\nR (Result): The level of misunderstandings significantly decreased, tasks became more clearly outlined, allowing QA to test the necessary functionality on time. There was greater confidence that no important details were missed, and the foreign customer noted improved process transparency and communication.",
+        "theme": "Communication, Leadership, and Determination"
+      },
+      {
+        "qNumber": 5,
+        "question": "Tell us about a situation when you were offered to take on the role of QA team lead, but you doubted your abilities. How did you approach this challenge?",
+        "answer": "S (Situation): On a previous project, my manager went on vacation and I was temporarily offered to coordinate three QA engineers. I had never handled these tasks before and felt uncertain.\nT (Task): I needed to establish a process for task distribution, run stand-ups, track testing status, and communicate with developers and management to ensure a timely release.\nA (Action): I asked a more experienced colleague for some tips on planning and leadership. I set up daily short status meetings where each QA reported on their progress and blockers. I also introduced a task board (Kanban) for visibility into who was responsible for what.\nR (Result): Despite my initial concern, the project was successfully completed, testing activities proceeded according to plan, and we made the release on time. I received positive feedback from the team and realized that tackling leadership responsibilities is quite feasible with proper organization.",
+        "theme": "Communication, Leadership, and Determination"
+      },
+      {
+        "qNumber": 6,
+        "question": "Share an experience when a conflict arose in your team regarding task distribution for testing. How did you handle the situation?",
+        "answer": "S (Situation): On one project, there was a dispute between two QAs about who should test which functionality areas. Each felt their area was more important and that they were overworked. \nT (Task): I needed to avoid escalating the conflict and redistribute work so as not to compromise product quality.\nA (Action): I organized a quick call with both QAs where we formalized their workloads: we made a table listing their tasks and time estimates. It turned out one colleague had taken on too much regression testing, while the other was busy with exploratory testing of new features. I suggested temporarily redistributing some regression tasks to the second QA and exploratory tasks to the first so they both could become familiar with the entire functionality.\nR (Result): The situation stabilized, the conflict was resolved, and both QAs got a more balanced workload and deeper understanding of each other's responsibilities. There were no more negative feelings on the team, and overall testing quality improved.",
+        "theme": "Communication, Leadership, and Determination"
+      },
+      {
+        "qNumber": 7,
+        "question": "Tell us about a situation when you needed to quickly come up with a testing strategy for a new module. What did you do?",
+        "answer": "S (Situation): A client requested urgent implementation of a new reporting module for a web platform, which needed to be available in two weeks. A full requirements analysis had only just begun, leaving little time for thorough test planning.\nT (Task): My task was to develop a basic testing strategy quickly: define test scope, risks, and priorities so as not to get overwhelmed by unprocessed scenarios.\nA (Action): I identified the most critical business scenarios (report generation with different filter types and data volumes). I created a checklist for manual testing with prioritized cases and outlined a structure for future API automation tests. I stayed in close contact with the business analyst to clarify details.\nR (Result): We managed to meet the tight deadline and deliver the module to the client without critical defects. Later, once requirements were solidified, I refined the test documentation and brought automated coverage up to 70%.",
+        "theme": "Implementation Strategy and Risk Management"
+      },
+      {
+        "qNumber": 8,
+        "question": "Share an example of how you gave or received feedback within the team if you noticed gaps in the testing or communication process.",
+        "answer": "S (Situation): During a retrospective, I observed that many testers did not fully document their exploratory testing results, causing duplicated efforts and confusion in subsequent sprints.\nT (Task): I needed to help the team formalize their testing results without burdening them with excessive bureaucracy.\nA (Action): I prepared a mini template for recording exploratory sessions: the test goal, explored scenarios, key findings, bugs, and questions. At the next team meeting, I showed that filling out the template only took about five minutes but offered a quick way to see the results. I suggested a two-week pilot period to test this approach.\nR (Result): Colleagues embraced the idea, and within those two weeks, the template became a standard for our QA group. The number of 'lost' or duplicated test cases decreased, and at the next retrospective, everyone noted how much easier it was to track what had already been tested.",
+        "theme": "Communication, Leadership, and Determination"
+      },
+      {
+        "qNumber": 9,
+        "question": "Tell us about a situation when you implemented or proposed a new testing practice on a project and why it was important.",
+        "answer": "S (Situation): On one project, there was no API test automation in place, even though most critical features relied on a microservice architecture. All checks were done manually through Postman, which took a lot of time and was prone to human error.\nT (Task): I needed to speed up the regression testing process, eliminate repetitive checks, and free up QA time for deeper testing.\nA (Action): I proposed starting automation with a small but critical part of the API—user authorization and retrieving the product list. I chose a straightforward framework (e.g., REST Assured or Pytest + Requests), assembled a basic set of tests, and documented steps for adding new cases.\nR (Result): The team saw benefits in the very first iteration: we cut regression time by about 30%, as some scenarios were now automatically checked. After that, the approach was scaled to other services, and the project achieved a more stable release cycle.",
+        "theme": "Automation, Performance, Security, \"shift-left\""
+      },
+      {
+        "qNumber": 10,
+        "question": "Tell us how you assessed risks and set testing priorities when time was limited.",
+        "answer": "S (Situation): Towards the end of the quarter, several improvements needed to be released in the payment system. Time was tight, and the number of cases for full regression exceeded the available testing time.\nT (Task): It was necessary to identify the most important areas and determine which scenarios could be tested 'end-to-end' and which could be postponed to subsequent sprints.\nA (Action): Together with the business analyst and developers, I formed a 'risk-based' approach: we ranked modules by criticality (which business functions carried direct financial risks), took into account statistics from previous releases (where bugs occurred most frequently), and from this formed a prioritized list of test cases. We also conducted smoke tests and chose specific areas for in-depth checks.\nR (Result): We met the deadline, avoided payment system failures, and did not lose important features. Further tests were carried out after the release, but no critical defects were found, confirming the effectiveness of our prioritization.",
+        "theme": "Implementation Strategy and Risk Management"
+      },
+      {
+        "qNumber": 11,
+        "question": "Describe a case when you had to develop regression testing from scratch—how did you organize it?",
+        "answer": "S (Situation): On a new project, there was no testing history, and no documentation of previous releases. Any change could potentially 'break' old functionality, but we didn't know where the risks lay.\nT (Task): We needed to create a basic set of regression tests to ensure stability of key user scenarios.\nA (Action): I started by inventorying the current features: together with an analyst and developers, I compiled a list of critical scenarios (order payment, registration, authorization, etc.). I then prioritized these scenarios and created 'smoke' and 'regression' sets for manual testing. At the same time, I laid the foundation for automated testing, but initially we needed to cover manual checks.\nR (Result): In a short time, we established a basic regression coverage of critical areas. The team reduced the risk of missed defects: in the first two sprints alone, we uncovered several serious bugs that had previously gone unnoticed.",
+        "theme": "Implementation Strategy and Risk Management"
+      },
+      {
+        "qNumber": 12,
+        "question": "Tell us about a situation when the project lacked sufficient product documentation. How did you fill the gaps while maintaining testing quality?",
+        "answer": "S (Situation): On one project, there was almost no documentation: requirements were only stated orally, and there were hardly any specifications or diagrams. The risk of missing critical details was high.\nT (Task): We needed to gather and formalize product knowledge during testing so the QA team could work more efficiently, and new hires could quickly understand the context.\nA (Action): I introduced 'knowledge-sharing' sessions: I recorded key points from meetings with developers and business analysts and structured them into concise notes in a Wiki. Simultaneously, I created a basic mind map of main modules, functional blocks, and their interrelationships.\nR (Result): The QA team got at least a simplified but up-to-date set of documentation, which we then expanded as new features appeared. This helped shorten onboarding time for new testers and lowered the risk of missing requirements.",
+        "theme": "Working with Requirements (Partial Changes, Incomplete Documentation)"
+      },
+      {
+        "qNumber": 13,
+        "question": "Share an example when you discovered a performance issue during testing. How did you proceed?",
+        "answer": "S (Situation): During manual scenarios, I noticed that some pages of a web application loaded significantly slower than usual. Users often complained about delays.\nT (Task): I needed to confirm whether it was an isolated or systemic issue and, if necessary, propose solutions or workarounds.\nA (Action): First, I performed basic response time measurements using available tools (like built-in DevTools in the browser). I found that the server was making an unusually large number of requests. Then I held a short meeting with developers and DevOps to show them logs and metrics. We identified that there were inefficient database queries. I suggested adding performance tests in the CI/CD pipeline so these issues would be caught automatically.\nR (Result): The team optimized the queries, reducing load times by nearly half. By adding performance tests to the pipeline, we began detecting potential bottlenecks early, preventing them from reaching production.",
+        "theme": "Automation, Performance, Security, \"shift-left\""
+      },
+      {
+        "qNumber": 14,
+        "question": "Tell us about a situation when you discovered a security vulnerability during testing. How did you convey it to the team and management?",
+        "answer": "S (Situation): While testing a feedback form, I found that there was no validation of incoming data. Malicious scripts (XSS) could be executed in the browser.\nT (Task): I needed to promptly inform the team of the security risk and help fix the vulnerability before release.\nA (Action): I prepared a small proof-of-concept demonstrating how a script could be inserted. Then, I arranged an urgent discussion with the developer and project manager, explaining the potential consequences of exploiting the vulnerability. In parallel, I proposed adding an automated check for proper data escaping for all forms.\nR (Result): The issue was quickly fixed before going to production, and subsequently all new forms were developed with added security checks in mind. Management appreciated my initiative as it prevented potential reputational and financial losses.",
+        "theme": "Automation, Performance, Security, \"shift-left\""
+      },
+      {
+        "qNumber": 15,
+        "question": "Describe a situation where you worked on a large distributed project, and test cases were being duplicated across teams. How did you solve this?",
+        "answer": "S (Situation): In a large company, several teams were working on related modules and testing similar scenarios without knowing it, resulting in repeated testing of the same functionality.\nT (Task): We needed to optimize the process and eliminate duplicate test cases so we could reach release faster.\nA (Action): I organized a joint test-case review with representatives from each team. We created a single test case repository and assigned responsibility for different modules. We also agreed on periodic meetings to update the repository and remove duplicates.\nR (Result): Ultimately, regression time was reduced, transparency improved, and each team knew who was responsible for what. The number of duplicated test cases decreased by more than 40%, and releases started to happen more quickly.",
+        "theme": "Communication, Leadership, and Determination"
+      },
+      {
+        "qNumber": 16,
+        "question": "Tell us about a situation when testing requirements were unclear, and you proposed a grooming or clarification session. What was the outcome?",
+        "answer": "S (Situation): While planning a sprint, we encountered a user story with a very general description of business logic and no detailed acceptance criteria.\nT (Task): We needed to obtain more precise requirements to avoid incorrect interpretations and reduce the risk of critical bugs.\nA (Action): I initiated a '3 amigo session' (QA, developer, business analyst) to go over each point of the story, ask clarifying questions, and form clear acceptance criteria. Then, at the retrospective, I suggested making such sessions regular for any complex story.\nR (Result): Not only did we avoid misunderstandings in the current sprint, but we also established a new practice. In subsequent sprints, complex user stories were worked out in advance, and the quality of task definition significantly improved.",
+        "theme": "Working with Requirements (Partial Changes, Incomplete Documentation)"
+      },
+      {
+        "qNumber": 17,
+        "question": "Share an example when you had to justify the importance of testing a specific feature or scenario that the team wanted to 'cut' due to deadlines.",
+        "answer": "S (Situation): Near the end of development, the client wanted to release an MVP by cutting some features and, therefore, the testing for them. However, I saw a risk that one of the cut features would affect the key payment scenario that many users rely on.\nT (Task): I needed to explain to management why testing this feature was crucial and the potential losses if any defects occurred.\nA (Action): I calculated the possible negative impact: if the feature was not tested and failed, users wouldn't be able to make payments, leading to a significant loss of sales. I presented these arguments in a general meeting, showing specific usage statistics from previous releases. I proposed a compromise: test only the main payment flow and postpone secondary scenarios to the next update.\nR (Result): Management agreed that risking revenue was unwise. We kept basic payment testing, and the product launched with minimal defects. The client was pleased with the MVP's stability.",
+        "theme": "Implementation Strategy and Risk Management"
+      },
+      {
+        "qNumber": 18,
+        "question": "Tell us how you organized UAT (User Acceptance Testing) with a client and what important lessons you learned.",
+        "answer": "S (Situation): The client was in another city and wanted to conduct UAT but did not have a clear idea of what scenarios to test or how to record the results. The QA team was supposed to assist them.\nT (Task): We needed to provide the client with a clear 'checklist,' train them on how to use the bug-tracking system, and explain how to carry out UAT without excess effort.\nA (Action): I created a simplified set of test scenarios: where to click, what to check, what the expected result was. I held a short online workshop showing them how to work with our bug-reporting tool. I answered all questions and designated a single point of contact from our side if they encountered difficulties.\nR (Result): The client successfully conducted UAT and discovered a couple of important usability issues that we quickly fixed before release. Later, they became more actively involved in the testing process and provided us with high-quality feedback.",
+        "theme": "Communication, Leadership, and Determination"
+      },
+      {
+        "qNumber": 19,
+        "question": "Share a case when developers doubted the value of exploratory testing, and you had to justify its necessity.",
+        "answer": "S (Situation): The developers believed that the existing set of automated tests was sufficient and didn't want QA spending time on free-form 'exploratory' testing.\nT (Task): I needed to demonstrate that beyond formal test cases, hidden or unexpected scenarios exist that are best uncovered through exploratory testing.\nA (Action): I organized a brief exploratory testing session where I showed how non-standard user actions (restarting a process in the middle, downloading large volumes of data, etc.) could cause errors that automated tests wouldn't catch. I documented several discovered defects and demonstrated them in a general meeting.\nR (Result): The developers saw the value of a hands-on approach. After that, we scheduled regular 'exploratory windows' in every sprint. The number of discovered non-standard bugs increased, and overall product quality improved.",
+        "theme": "Implementation Strategy and Risk Management"
+      },
+      {
+        "qNumber": 20,
+        "question": "Tell us about a testing mistake you made that led to negative consequences. What did you do to correct the situation and prevent a recurrence?",
+        "answer": "S (Situation): Once, I missed a critical scenario when testing the authorization functionality. In production, users faced account locks when changing their passwords, causing a major stir.\nT (Task): We needed to quickly fix the defect and restore the customer's and users' trust.\nA (Action): I immediately acknowledged my mistake and suggested an urgent solution: I created a detailed test case covering the scenario and rapidly tested the hotfix that developers released. Then I analyzed why the scenario had been overlooked (the combination of password change and logging in from another device had not been considered). I prepared a checklist for similar cases and shared it with the team to avoid repeating the same mistake.\nR (Result): The bug was fixed quickly, negative user feedback subsided, and the team saw that I did not try to 'bury' the problem but addressed it responsibly. Going forward, we tightened checks for user authorization and account changes.",
+        "theme": "Communication, Leadership, and Determination"
+      },
+      {
+        "qNumber": 21,
+        "question": "Describe a case when you introduced a set of test metrics (for example, 'percentage of test coverage,' 'average time to fix defects') and how you conveyed their importance to management.",
+        "answer": "S (Situation): On one project, management felt QA lacked transparency on testing effectiveness. They sometimes didn't understand where work hours were going and how much of the product was actually being tested.\nT (Task): I needed to develop and implement a clear set of metrics that would reflect product quality and QA progress.\nA (Action): I proposed several key indicators: percentage of test coverage for critical modules, average time to close a bug, and number of reopened bugs. I created a convenient Jira dashboard that automatically calculated these metrics. Then I walked management through them, explaining why these specific metrics were important and how they helped in decision-making.\nR (Result): Management gained more clarity; the testing process became more understandable, and the QA team could argue more effectively for which areas needed focus and why. The time spent fixing critical defects decreased by around 20%.",
+        "theme": "Automation, Performance, Security, \"shift-left\""
+      },
+      {
+        "qNumber": 22,
+        "question": "Tell us about a situation when you had to demonstrate the value of a 'shift-left' testing approach (early QA involvement) in a new project.",
+        "answer": "S (Situation): In a new project, QA was only brought in at the end of the sprint, so many bugs were discovered late and required urgent rework.\nT (Task): I needed to convince the team and management that QA should participate in requirement and design discussions from the beginning to avoid major overhauls later.\nA (Action): I suggested an experiment: in the next sprint, QA participates in planning and grooming sessions with analysts and developers. We prepared questions and potential test scenarios for user stories in advance.\nR (Result): Bugs related to ambiguous or incomplete requirements practically disappeared. The speed of fixing defects improved, as many issues were prevented before development started. Management noted time savings and reduced risks.",
+        "theme": "Automation, Performance, Security, \"shift-left\""
+      },
+      {
+        "qNumber": 23,
+        "question": "Share an example when you needed to integrate automated tests into a CI/CD pipeline to accelerate releases and enhance stability.",
+        "answer": "S (Situation): In the project, releases were done manually; QA ran automated tests locally, which took a lot of time. Developers often only found out about bugs hours after a commit.\nT (Task): We needed to automate the process of running automated tests whenever code changed and provide early defect feedback.\nA (Action): I set up the automated tests (Selenium+pytest or any other stack) to run in a CI/CD tool (Jenkins, GitLab CI, etc.). I placed critical tests in a 'smoke' group that ran on each pull request. The full regression suite ran overnight.\nR (Result): The number of unexpected regression bugs decreased, the release cycle sped up, and the developer team appreciated having near real-time test results.",
+        "theme": "Automation, Performance, Security, \"shift-left\""
+      },
+      {
+        "qNumber": 24,
+        "question": "Describe a case when you used 'pair testing' or 'mob testing' with developers to solve a complex problem.",
+        "answer": "S (Situation): We encountered an unstable bug that did not appear for all users or in all environments. The standard approach (one tester) was not yielding results.\nT (Task): We needed an efficient method to quickly reproduce the bug, identify its causes, and document it.\nA (Action): I proposed a 'mob testing' session, where QA, a developer, and a business analyst worked together. We all looked at one screen (or used a virtual meeting), iterated through scenarios step by step, recorded any anomaly in logs, and shared hypotheses on the spot.\nR (Result): Within an hour, we found the root cause—an incorrect configuration in one module. The bug was fixed immediately, and the team saw the benefit of this collaborative format for complex cases.",
+        "theme": "Automation, Performance, Security, \"shift-left\""
+      },
+      {
+        "qNumber": 25,
+        "question": "Tell us how you presented testing results to a broad audience (e.g., a 'Go/No-Go' meeting) and what was important to consider.",
+        "answer": "S (Situation): Prior to release, we held a 'Go/No-Go' meeting involving top management. We needed a concise yet convincing explanation of the product's readiness.\nT (Task): I had to show that the product had undergone all necessary testing stages, highlight risks and identified defects so management could decide on the release.\nA (Action): I prepared a brief presentation with key metrics: total number of test cases, percentage of successful passes, which critical bugs were still open. I emphasized the business risk of each bug report and possible workarounds.\nR (Result): Management decided to proceed with the release while fully understanding which areas still needed work. With a clear focus on risks, it was easier for them to agree on the plan for further improvements.",
+        "theme": "Automation, Performance, Security, \"shift-left\""
+      },
+      {
+        "qNumber": 26,
+        "question": "Share an example when you had to analyze many bug reports in a short time and prioritize them for quick fixes.",
+        "answer": "S (Situation): After a major update in production, a large number of defect reports started coming in. Dozens of new tickets appeared in the tracker.\nT (Task): I needed to quickly identify which bugs were blocking business processes and needed immediate fixes, and which could wait.\nA (Action): I did a rapid categorization: flagged critical bugs that affected payment and authorization (P1), serious but with workarounds (P2), and cosmetic issues (P3). Simultaneously, I met with the team to clarify which scenarios were key for customers, and assigned tickets to developers based on priority.\nR (Result): The most critical bugs were fixed the same day, allowing us to quickly restore user operations. Management saw that QA not only recorded errors but also managed priorities effectively to reduce business risks.",
+        "theme": "Implementation Strategy and Risk Management"
+      },
+      {
+        "qNumber": 27,
+        "question": "Tell us about a case when you had to thoroughly check web application compatibility across different browsers and devices. How did you organize it?",
+        "answer": "S (Situation): The client's project required support for older browser versions and mobile devices. There was a high risk that users would encounter visual and functional bugs.\nT (Task): We needed to test cross-browser and cross-platform compatibility as thoroughly as possible within a tight sprint timeline.\nA (Action): I developed a compatibility matrix listing all browsers (Chrome, Firefox, Safari, IE/Edge) and their versions. I prioritized scenarios, especially those involving ordering and user accounts. I organized quick tests on 'real' office devices and partially used a cloud service (e.g., BrowserStack) for mobile platforms.\nR (Result): We discovered several critical visual bugs in IE and Safari and fixed them before release. The client was pleased that users could comfortably use the service regardless of device or browser.",
+        "theme": "Automation, Performance, Security, \"shift-left\""
+      },
+      {
+        "qNumber": 28,
+        "question": "Share an example when you had to create a policy for hotfix releases (urgent fixes) and get team approval.",
+        "answer": "S (Situation): The product occasionally had urgent bugs in production, and the team released hotfixes without going through the full testing cycle. This sometimes introduced new defects.\nT (Task): We needed a clear policy defining which tests must be run for any hotfix to avoid introducing additional risks.\nA (Action): I identified a set of high-priority automated tests (smoke) plus key manual checks. When releasing a hotfix, these tests would automatically run on staging, and QA would rapidly check critical paths—payment, authorization, data saving. Then I coordinated this approach with management and developers so it became a mandatory process.\nR (Result): The number of regression issues after hotfix releases was cut in half. The process became transparent, and no one released 'hot' changes without at least minimal testing.",
+        "theme": "Automation, Performance, Security, \"shift-left\""
+      },
+      {
+        "qNumber": 29,
+        "question": "Tell us about a situation when you were responsible for training a new QA or intern, helping them quickly adapt to the project.",
+        "answer": "S (Situation): A newcomer joined the team with no real project experience. We were operating under tight deadlines and didn't want them to be 'lost' in an unfamiliar product.\nT (Task): I needed to teach the intern the basics of our testing process, give them initial tasks, and enable them to contribute quickly.\nA (Action): I created a brief onboarding guide: how to set up the environment, where to find requirements, how to log bugs, and what quality criteria were important in our project. I set up daily short status meetings to track progress and address questions. I also provided regular feedback on strengths and areas for improvement.\nR (Result): Within a couple of weeks, the intern was independently testing a small feature, drafting checklists, and finding defects. This boosted the entire team's speed, and the newcomer quickly integrated into the workflow.",
+        "theme": "Communication, Leadership, and Determination"
+      },
+      {
+        "qNumber": 30,
+        "question": "Describe a case when you had to collaborate with a marketing or support department to get real user feedback for better testing.",
+        "answer": "S (Situation): Marketing and support often receive complaints and suggestions from end users, but QA wasn't always aware of them. We might miss important testing scenarios.\nT (Task): We needed to establish information sharing so QA would be informed of user pain points and add relevant checks.\nA (Action): I arranged regular biweekly meetings with a support representative, during which we reviewed typical customer reports. I compiled an additional list of test cases based on recurring complaints. I also suggested that marketing gather user feedback about the interface's usability and forward it to us for UX testing.\nR (Result): We started discovering more 'real' bugs and UX issues that weren't part of our original scenarios. User satisfaction improved, and the team gained insight into actual customer pains rather than just formal requirements.",
+        "theme": "Automation, Performance, Security, \"shift-left\""
+      }
+    ];
+
+    // DOM elements
+    const generateBtn = document.getElementById('generate-btn');
+    const questionCountSlider = document.getElementById('question-count');
+    const questionCountValue = document.getElementById('question-count-value');
+    const questionsContainer = document.getElementById('questions-container');
+    const themeDropdownBtn = document.getElementById('theme-dropdown-btn');
+    const themeDropdownContent = document.getElementById('theme-dropdown-content');
+    const selectAllThemes = document.getElementById('select-all-themes');
+    const fileInput = document.getElementById('file-input');
+    const fileName = document.getElementById('file-name');
+    const uploadBtn = document.getElementById('upload-btn');
+
+    // Event listeners
+    generateBtn.addEventListener('click', generateQuestions);
+    questionCountSlider.addEventListener('input', updateQuestionCount);
+
+    // Toggle dropdown
+    themeDropdownBtn.addEventListener('click', function () {
+      const isOpen = themeDropdownContent.style.display === 'block';
+      themeDropdownContent.style.display = isOpen ? 'none' : 'block';
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function (e) {
+      if (!e.target.matches('.dropdown-btn') && !e.target.matches('.dropdown-content') &&
+        !e.target.matches('.dropdown-content *')) {
+        themeDropdownContent.style.display = 'none';
+      }
+    });
+
+    // Update selected themes text
+    themeDropdownContent.addEventListener('change', function (e) {
+      if (e.target.id === 'select-all-themes') {
+        const isChecked = e.target.checked;
+        const themeCheckboxes = themeDropdownContent.querySelectorAll('input[type="checkbox"]:not(#select-all-themes)');
+        themeCheckboxes.forEach(checkbox => checkbox.checked = isChecked);
+      }
+      updateSelectedThemes();
+    });
+
+    // File input handling
+    fileInput.addEventListener('change', function () {
+      if (this.files.length > 0) {
+        fileName.textContent = this.files[0].name;
+      } else {
+        fileName.textContent = 'No file chosen';
+      }
+    });
+
+    uploadBtn.addEventListener('click', uploadQuestions);
+
+    // Handle card flipping delegated to the questions container
+    questionsContainer.addEventListener('click', function (e) {
+      if (e.target.classList.contains('flip-btn')) {
+        const card = e.target.closest('.question-card');
+        card.classList.add('flipped');
+      } else if (e.target.classList.contains('back-btn')) {
+        const card = e.target.closest('.question-card');
+        card.classList.remove('flipped');
+      }
+    });
+
+    // Functions
+    function updateQuestionCount() {
+      questionCountValue.textContent = questionCountSlider.value;
+    }
+
+    function getSelectedThemes() {
+      const checkboxes = themeDropdownContent.querySelectorAll('input[type="checkbox"]:not(#select-all-themes):checked');
+      return Array.from(checkboxes).map(checkbox => checkbox.value);
+    }
+
+    function updateSelectedThemes() {
+      const selectedThemes = getSelectedThemes();
+      if (selectedThemes.length > 0) {
+        themeDropdownBtn.textContent = `${selectedThemes.length} themes selected`;
+      } else {
+        themeDropdownBtn.textContent = 'Select Themes';
+      }
+    }
+
+    function generateQuestions() {
+      const count = parseInt(questionCountSlider.value);
+      const selectedThemes = getSelectedThemes();
+
+      // Filter questions by selected themes, or use all if none selected
+      let filteredQuestions = questionsData;
+      if (selectedThemes.length > 0) {
+        filteredQuestions = questionsData.filter(q => selectedThemes.includes(q.theme));
+      }
+
+      // Shuffle and pick random questions
+      const shuffled = [...filteredQuestions].sort(() => 0.5 - Math.random());
+      const selectedQuestions = shuffled.slice(0, Math.min(count, shuffled.length));
+
+      displayQuestions(selectedQuestions);
+    }
+
+    function displayQuestions(questions) {
+      if (questions.length === 0) {
+        questionsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i>🔍</i>
+                        <p>No questions match your criteria. Try selecting different themes or uploading a question file.</p>
+                    </div>
+                `;
+        return;
+      }
+
+      let html = '';
+      questions.forEach((q, index) => {
+        const answer = q.answer || "No answer provided";
+        html += `
+                    <div class="question-card">
+                        <div class="card-inner">
+                            <div class="card-front">
+                                <div class="question-text">${index + 1}. ${q.question}</div>
+                                <div class="question-theme">Theme: ${q.theme}</div>
+                                <button class="flip-btn">Show Answer</button>
+                            </div>
+                            <div class="card-back">
+                                <div class="answer-text">Answer:</div>
+                                <div class="question-text">${answer}</div>
+                                <button class="back-btn">Back to Question</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+      });
+
+      questionsContainer.innerHTML = html;
+    }
+
+    function updateThemesDropdown() {
+      // Extract unique themes from questions data
+      const themes = [...new Set(questionsData.map(q => q.theme))].sort();
+
+      // Clear existing theme options except "Select All"
+      const selectAllContainer = themeDropdownContent.querySelector('.select-all-container');
+      themeDropdownContent.innerHTML = '';
+      themeDropdownContent.appendChild(selectAllContainer);
+
+      // Add theme options
+      themes.forEach(theme => {
+        const label = document.createElement('label');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = theme;
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(` ${theme}`));
+        themeDropdownContent.appendChild(label);
+      });
+
+      // Reset the dropdown text
+      themeDropdownBtn.textContent = 'Select Themes';
+    }
+
+    function uploadQuestions() {
+      const file = fileInput.files[0];
+      if (!file) {
+        alert('Please select a file first.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (Array.isArray(data) && data.length > 0) {
+            // Validate the format
+            const isValidFormat = data.every(item =>
+              typeof item === 'object' &&
+              'qNumber' in item &&
+              'question' in item &&
+              'answer' in item &&
+              'theme' in item
+
+            );
+
+            if (isValidFormat) {
+              // Replace the existing questions data with the uploaded data
+              questionsData = data;
+
+              // Update the themes dropdown based on the new data
+              updateThemesDropdown();
+
+              alert('Questions uploaded successfully!');
+
+              // Clear the current display
+              questionsContainer.innerHTML = `
+                                <div class="empty-state">
+                                    <i>📋</i>
+                                    <p>Questions loaded! Click the "Generate Questions" button to start.</p>
+                                </div>
+                            `;
+            } else {
+              alert('Invalid data format. Each item must have qNumber, question, and theme properties.');
+            }
+          } else {
+            alert('Invalid JSON format. Please upload an array of question objects.');
+          }
+        } catch (error) {
+          alert('Error parsing JSON file: ' + error.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // Initialize with sample data
+    updateThemesDropdown();
+  </script>
+</body>
+
+</html>
