@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Questions Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            height: calc(100vh - 40px);
+            gap: 20px;
+        }
+        .left-panel {
+            flex: 2;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        .right-panel {
+            flex: 1;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .question-item {
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4a90e2;
+        }
+        .question-text {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+        .question-theme {
+            font-size: 14px;
+            color: #666;
+            font-style: italic;
+        }
+        .control-section {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .control-section h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #3570b2;
+        }
+        .slider-container {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .slider-container input {
+            flex: 1;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        .dropdown-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: left;
+            cursor: pointer;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+        .dropdown-content label {
+            display: block;
+            padding: 8px 10px;
+            cursor: pointer;
+        }
+        .dropdown-content label:hover {
+            background-color: #f1f1f1;
+        }
+        .file-input-container {
+            position: relative;
+            margin-top: 10px;
+        }
+        .file-input-container input[type="file"] {
+            position: absolute;
+            width: 0;
+            height: 0;
+            opacity: 0;
+        }
+        .file-input-label {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #4a90e2;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .file-input-label:hover {
+            background-color: #3570b2;
+        }
+        .file-name {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 50px 0;
+        }
+        .empty-state i {
+            font-size: 50px;
+            margin-bottom: 20px;
+            display: block;
+        }
+        .select-all-container {
+            padding: 8px 10px;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel" id="questions-container">
+            <div class="empty-state">
+                <i>📋</i>
+                <p>No questions generated yet. Click the "Generate Questions" button to start.</p>
+            </div>
+        </div>
+        <div class="right-panel">
+            <div class="control-section">
+                <h3>Generate Questions</h3>
+                <button id="generate-btn">Generate Questions</button>
+                <div class="slider-container">
+                    <span>Number of questions: </span>
+                    <input type="range" id="question-count" min="1" max="10" value="3">
+                    <span id="question-count-value">3</span>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>Question Themes</h3>
+                <div class="dropdown">
+                    <button class="dropdown-btn" id="theme-dropdown-btn">Select Themes</button>
+                    <div class="dropdown-content" id="theme-dropdown-content">
+                        <div class="select-all-container">
+                            <label><input type="checkbox" id="select-all-themes"> Select All</label>
+                        </div>
+                        <!-- Themes will be populated here dynamically -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>Upload Question File</h3>
+                <div class="file-input-container">
+                    <input type="file" id="file-input" accept=".json">
+                    <label for="file-input" class="file-input-label">Choose File</label>
+                    <div class="file-name" id="file-name">No file chosen</div>
+                </div>
+                <button id="upload-btn" style="margin-top: 10px; width: 100%;">Upload Questions</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample questions data (will be replaced with uploaded data)
+        let questionsData = [
+            { qNumber: 1, question: "What is the tallest mountain in the world?", theme: "Geography" },
+            { qNumber: 2, question: "Who wrote 'Pride and Prejudice'?", theme: "Literature" },
+            { qNumber: 3, question: "What is the chemical symbol for gold?", theme: "Science" }
+        ];
+
+        // DOM elements
+        const generateBtn = document.getElementById('generate-btn');
+        const questionCountSlider = document.getElementById('question-count');
+        const questionCountValue = document.getElementById('question-count-value');
+        const questionsContainer = document.getElementById('questions-container');
+        const themeDropdownBtn = document.getElementById('theme-dropdown-btn');
+        const themeDropdownContent = document.getElementById('theme-dropdown-content');
+        const selectAllThemes = document.getElementById('select-all-themes');
+        const fileInput = document.getElementById('file-input');
+        const fileName = document.getElementById('file-name');
+        const uploadBtn = document.getElementById('upload-btn');
+
+        // Event listeners
+        generateBtn.addEventListener('click', generateQuestions);
+        questionCountSlider.addEventListener('input', updateQuestionCount);
+        
+        // Toggle dropdown
+        themeDropdownBtn.addEventListener('click', function() {
+            const isOpen = themeDropdownContent.style.display === 'block';
+            themeDropdownContent.style.display = isOpen ? 'none' : 'block';
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.matches('.dropdown-btn') && !e.target.matches('.dropdown-content') && 
+                !e.target.matches('.dropdown-content *')) {
+                themeDropdownContent.style.display = 'none';
+            }
+        });
+        
+        // Update selected themes text
+        themeDropdownContent.addEventListener('change', function(e) {
+            if (e.target.id === 'select-all-themes') {
+                const isChecked = e.target.checked;
+                const themeCheckboxes = themeDropdownContent.querySelectorAll('input[type="checkbox"]:not(#select-all-themes)');
+                themeCheckboxes.forEach(checkbox => checkbox.checked = isChecked);
+            }
+            updateSelectedThemes();
+        });
+        
+        // File input handling
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                fileName.textContent = this.files[0].name;
+            } else {
+                fileName.textContent = 'No file chosen';
+            }
+        });
+        
+        uploadBtn.addEventListener('click', uploadQuestions);
+
+        // Functions
+        function updateQuestionCount() {
+            questionCountValue.textContent = questionCountSlider.value;
+        }
+
+        function getSelectedThemes() {
+            const checkboxes = themeDropdownContent.querySelectorAll('input[type="checkbox"]:not(#select-all-themes):checked');
+            return Array.from(checkboxes).map(checkbox => checkbox.value);
+        }
+
+        function updateSelectedThemes() {
+            const selectedThemes = getSelectedThemes();
+            if (selectedThemes.length > 0) {
+                themeDropdownBtn.textContent = `${selectedThemes.length} themes selected`;
+            } else {
+                themeDropdownBtn.textContent = 'Select Themes';
+            }
+        }
+
+        function generateQuestions() {
+            const count = parseInt(questionCountSlider.value);
+            const selectedThemes = getSelectedThemes();
+            
+            // Filter questions by selected themes, or use all if none selected
+            let filteredQuestions = questionsData;
+            if (selectedThemes.length > 0) {
+                filteredQuestions = questionsData.filter(q => selectedThemes.includes(q.theme));
+            }
+            
+            // Shuffle and pick random questions
+            const shuffled = [...filteredQuestions].sort(() => 0.5 - Math.random());
+            const selectedQuestions = shuffled.slice(0, Math.min(count, shuffled.length));
+            
+            displayQuestions(selectedQuestions);
+        }
+
+        function displayQuestions(questions) {
+            if (questions.length === 0) {
+                questionsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i>🔍</i>
+                        <p>No questions match your criteria. Try selecting different themes or uploading a question file.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            questions.forEach((q, index) => {
+                html += `
+                    <div class="question-item">
+                        <div class="question-text">${index + 1}. ${q.question}</div>
+                        <div class="question-theme">Theme: ${q.theme}</div>
+                    </div>
+                `;
+            });
+            
+            questionsContainer.innerHTML = html;
+        }
+
+        function updateThemesDropdown() {
+            // Extract unique themes from questions data
+            const themes = [...new Set(questionsData.map(q => q.theme))].sort();
+            
+            // Clear existing theme options except "Select All"
+            const selectAllContainer = themeDropdownContent.querySelector('.select-all-container');
+            themeDropdownContent.innerHTML = '';
+            themeDropdownContent.appendChild(selectAllContainer);
+            
+            // Add theme options
+            themes.forEach(theme => {
+                const label = document.createElement('label');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = theme;
+                label.appendChild(checkbox);
+                label.appendChild(document.createTextNode(` ${theme}`));
+                themeDropdownContent.appendChild(label);
+            });
+            
+            // Reset the dropdown text
+            themeDropdownBtn.textContent = 'Select Themes';
+        }
+
+        function uploadQuestions() {
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a file first.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (Array.isArray(data) && data.length > 0) {
+                        // Validate the format
+                        const isValidFormat = data.every(item => 
+                            typeof item === 'object' && 
+                            'qNumber' in item && 
+                            'question' in item && 
+                            'theme' in item
+                        );
+                        
+                        if (isValidFormat) {
+                            // Replace the existing questions data with the uploaded data
+                            questionsData = data;
+                            
+                            // Update the themes dropdown based on the new data
+                            updateThemesDropdown();
+                            
+                            alert('Questions uploaded successfully!');
+                            
+                            // Clear the current display
+                            questionsContainer.innerHTML = `
+                                <div class="empty-state">
+                                    <i>📋</i>
+                                    <p>Questions loaded! Click the "Generate Questions" button to start.</p>
+                                </div>
+                            `;
+                        } else {
+                            alert('Invalid data format. Each item must have qNumber, question, and theme properties.');
+                        }
+                    } else {
+                        alert('Invalid JSON format. Please upload an array of question objects.');
+                    }
+                } catch (error) {
+                    alert('Error parsing JSON file: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Initialize with sample data
+        updateThemesDropdown();
+    </script>
+</body>
+</html>
