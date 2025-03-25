@@ -1,6 +1,6 @@
 # Random Questions Generator
 
-Link to site: github pages question_randomizer (https://dkavaliou-by.github.io/question_randomizer/)
+Link to site: [ github pages question_randomizer](https://dkavaliou-by.github.io/question_randomizer/)
 
 ## Overview
 This project is a simple single-page web application that generates random questions based on user preferences. The application allows users to:
